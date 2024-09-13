@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stockzrs-metrics-service
+  namespace: stockzrs-metrics-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stockzrs-metrics-service
+  template:
+    metadata:
+      labels:
+        app: stockzrs-metrics-service
+    spec:
+      nodeSelector:
+        role: general
+      containers:
+      - name: stockzrs-metrics-service
+        image: PLACEHOLDER_IMAGE
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - secretRef:
+            name: stockzrs-metrics-secrets

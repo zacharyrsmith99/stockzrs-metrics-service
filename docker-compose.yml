@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB_NAME=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USERNAME=admin
+      - POSTGRES_PASSWORD=admin
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+
+  db:
+    image: postgres:16.4
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+
+volumes:
+  postgres_data:

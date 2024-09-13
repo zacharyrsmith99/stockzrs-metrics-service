@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "stockzrs-metrics-service"
+version = "0.1.0"
+description = ""
+authors = ["zacharyrsmith99 <zachary.r.smith99@gmail.com>"]
+readme = "README.md"
+packages = [{include = "stockzrs_metrics_service"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = {extras = ["standard"], version = "^0.114.1"}
+sqlalchemy = "^2.0.34"
+psycopg2 = "^2.9.9"
+python-dotenv = "^1.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+start = "stockzrs_metrics_service.main:main"
