@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, List
 
 from stockzrs_metrics_service.models.minute_by_minute_aggregates import (
     MinuteByMinuteStock,
@@ -69,7 +69,7 @@ class CarouselController:
         method_map = {
             'stock': self.get_stock_data,
             'etf': self.get_etf_data,
-            'index': self.get_market_index_data,
+            'market_index': self.get_market_index_data,
             'currency': self.get_currency_data,
             'cryptocurrency': self.get_cryptocurrency_data
         }
@@ -77,5 +77,73 @@ class CarouselController:
         method = method_map.get(asset_type.lower())
         if method:
             return method(symbol)
+        else:
+            raise ValueError(f"Unsupported asset type: ({asset_type})")
+        
+    def _get_most_recent_minute_record(self, model, symbol: str) -> Optional[dict]:
+        record = self.session.query(model).filter(
+            model.symbol == symbol
+        ).order_by(model.timestamp.desc()).first()
+
+        if record:
+            return {
+                'symbol': record.symbol,
+                'timestamp': record.timestamp,
+                'open_price': float(record.open_price),
+                'high_price': float(record.high_price),
+                'low_price': float(record.low_price),
+                'close_price': float(record.close_price)
+            }
+        return None
+
+    def get_most_recent_data(self, asset_type: str, symbol: str) -> Optional[dict]:
+        model_map = {
+            'stock': MinuteByMinuteStock,
+            'etf': MinuteByMinuteETF,
+            'market_index': MinuteByMinuteMarketIndex,
+            'currency': MinuteByMinuteCurrency,
+            'cryptocurrency': MinuteByMinuteCryptocurrency
+        }
+        
+        model = model_map.get(asset_type.lower())
+        if model:
+            return self._get_most_recent_minute_record(model, symbol)
+        else:
+            raise ValueError(f"Unsupported asset type: ({asset_type})")
+        
+    def _get_last_24_hours_data(self, model, symbol: str) -> List[dict]:
+        twenty_four_hours_ago = datetime.now() - timedelta(hours=1)
+        
+        records = (
+            self.session.query(model)
+            .filter(model.symbol == symbol, model.timestamp >= twenty_four_hours_ago)
+            .order_by(model.timestamp.asc())
+            .all()
+        )
+        
+        return [
+            {
+                'symbol': record.symbol,
+                'timestamp': record.timestamp,
+                'open_price': float(record.open_price),
+                'high_price': float(record.high_price),
+                'low_price': float(record.low_price),
+                'close_price': float(record.close_price)
+            }
+            for record in records
+        ]
+
+    def get_last_24_hours_data(self, asset_type: str, symbol: str) -> List[dict]:
+        model_map = {
+            'stock': MinuteByMinuteStock,
+            'etf': MinuteByMinuteETF,
+            'market_index': MinuteByMinuteMarketIndex,
+            'currency': MinuteByMinuteCurrency,
+            'cryptocurrency': MinuteByMinuteCryptocurrency
+        }
+        
+        model = model_map.get(asset_type.lower())
+        if model:
+            return self._get_last_24_hours_data(model, symbol)
         else:
             raise ValueError(f"Unsupported asset type: ({asset_type})")

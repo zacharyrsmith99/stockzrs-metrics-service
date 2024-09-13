@@ -24,3 +24,21 @@ spec:
         envFrom:
         - secretRef:
             name: stockzrs-metrics-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stockzrs-metrics-service
+  namespace: stockzrs-metrics-service
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: external
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+spec:
+  selector:
+    app: stockzrs-metrics-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
