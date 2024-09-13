@@ -16,5 +16,4 @@ RUN poetry config virtualenvs.create false \
 
 COPY . /app
 
-# Run the application
 CMD ["sh", "start.sh"]
