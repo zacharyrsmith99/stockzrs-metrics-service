@@ -26,33 +26,33 @@ class CarouselDataPoint(BaseModel):
     low_price: float
     close_price: float
 
+class InstrumentCardComparisonResponse(BaseModel):
+    current: CarouselDataPoint
+    previous: Optional[CarouselDataPoint]
+
 class Last24HoursResponse(BaseModel):
     data: List[CarouselDataPoint]
 
-@router.get("/carousel/comparison_price", response_model=CarouselResponse)
-async def carousel_get(
+@router.get("/carousel/instrument_card_comparison", response_model=InstrumentCardComparisonResponse)
+async def instrument_card_comparison(
     symbol: str = Query(..., description="Asset Symbol"),
-    asset_type: str = Query(..., description="Asset type (stock, etf, index, currency, cryptocurrency)"),
+    asset_type: str = Query(..., description="Asset type (stock, etf, market_index, currency, cryptocurrency)"),
     db: Session = Depends(get_db)
 ):
     controller = CarouselController(db)
     
     try:
-        data = controller.get_data(asset_type, symbol)
+        current, previous = controller.get_instrument_card_comparison(asset_type, symbol)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     
-    if data is None:
+    if current is None:
         raise HTTPException(status_code=404, detail=f"No data found for {asset_type} with symbol {symbol}")
     
-    return {
-        "symbol": data['symbol'],
-        "timestamp": data['timestamp'].isoformat(),
-        "open_price": data['open_price'],
-        "high_price": data['high_price'],
-        "low_price": data['low_price'],
-        "close_price": data['close_price']
-    }
+    return InstrumentCardComparisonResponse(
+        current=CarouselDataPoint(**current),
+        previous=CarouselDataPoint(**previous) if previous else None,
+    )
 
 @router.get("/carousel/most_recent_price", response_model=CarouselResponse)
 async def carousel_get_most_recent(
