@@ -32,7 +32,7 @@ async def get_price_data(
     controller = ChartController(db)
     
     try:
-        data = controller.get_price_data(symbol, asset_type, interval, start_time, end_time)
+        data = controller.get_price_data(symbol, asset_type.lower(), interval, start_time, end_time)
         
         if not data:
             raise HTTPException(status_code=404, detail=f"No data found for the given parameters")
