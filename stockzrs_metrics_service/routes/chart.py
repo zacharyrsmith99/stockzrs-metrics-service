@@ -40,4 +40,4 @@ async def get_price_data(
         return PriceDataResponse(data=[PriceData(**item) for item in data])
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred while accessing chart price data.")
