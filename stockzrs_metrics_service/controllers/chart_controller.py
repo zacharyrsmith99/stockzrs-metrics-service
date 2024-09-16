@@ -32,12 +32,11 @@ class ChartController:
                 func.timezone('GMT', table.c.timestamp)
             ),
             'YYYY-MM-DD HH24:MI:SS'
-        ).label('formatted_timestamp')
+        ).label('timestamp')
 
         query = select(
             table.c.symbol,
             formatted_timestamp,
-            table.c.timestamp,
             table.c.open_price,
             table.c.high_price,
             table.c.low_price,
@@ -49,16 +48,15 @@ class ChartController:
         if end_time:
             query = query.where(adjusted_timestamp <= func.timezone('America/New_York', func.timezone('GMT', end_time)))
         
-        query = query.order_by(adjusted_timestamp.asc())
+        query = query.order_by('timestamp')
         
         result = self.session.execute(query)
-        
+
         data = []
         for row in result:
             data.append({
                 "symbol": row.symbol,
                 "timestamp": row.timestamp,
-                "formatted_timestamp": row.formatted_timestamp,
                 "open_price": float(row.open_price),
                 "high_price": float(row.high_price),
                 "low_price": float(row.low_price),
