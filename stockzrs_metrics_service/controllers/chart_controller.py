@@ -22,21 +22,10 @@ class ChartController:
         
         metadata = MetaData()
         table = Table(table_name, metadata, autoload_with=self.session.bind)
-        
-        adjusted_timestamp = func.timezone('America/New_York', 
-            func.timezone('GMT', table.c.timestamp)
-        ).label('adjusted_timestamp')
-
-        formatted_timestamp = func.to_char(
-            func.timezone('America/New_York', 
-                func.timezone('GMT', table.c.timestamp)
-            ),
-            'YYYY-MM-DD HH24:MI:SS'
-        ).label('timestamp')
 
         query = select(
             table.c.symbol,
-            formatted_timestamp,
+            table.c.timestamp,
             table.c.open_price,
             table.c.high_price,
             table.c.low_price,
@@ -44,13 +33,11 @@ class ChartController:
         ).where(table.c.symbol == symbol)
         
         if start_time:
-            query = query.where(adjusted_timestamp >= func.timezone('America/New_York', start_time))
+            query = query.where(table.c.timestamp >= start_time)
         if end_time:
-            query = query.where(adjusted_timestamp <= func.timezone('America/New_York', end_time))
+            query = query.where(table.c.timestamp <= end_time)
         
         query = query.order_by('timestamp')
-
-        query1 = query.compile(compile_kwargs={"literal_binds": True}).string
         
         result = self.session.execute(query)
 
