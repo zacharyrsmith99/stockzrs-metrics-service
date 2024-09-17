@@ -44,11 +44,13 @@ class ChartController:
         ).where(table.c.symbol == symbol)
         
         if start_time:
-            query = query.where(adjusted_timestamp >= func.timezone('America/New_York', func.timezone('GMT', start_time)))
+            query = query.where(adjusted_timestamp >= func.timezone('America/New_York', start_time))
         if end_time:
-            query = query.where(adjusted_timestamp <= func.timezone('America/New_York', func.timezone('GMT', end_time)))
+            query = query.where(adjusted_timestamp <= func.timezone('America/New_York', end_time))
         
         query = query.order_by('timestamp')
+
+        query1 = query.compile(compile_kwargs={"literal_binds": True}).string
         
         result = self.session.execute(query)
 
